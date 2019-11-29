@@ -1,5 +1,5 @@
 ;nyquist plug-in
-;version 4
+;version 0.1
 ;type analyze
 ;categories "http://lv2plug.in/ns/lv2core#AnalyserPlugin"
 ;name "Linear a linear programming language"
