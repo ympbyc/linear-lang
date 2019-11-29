@@ -23,6 +23,7 @@ CC-By-SA
 Roadmap
 -------
 
++ Integrate TTS
 + Rewrite the voice recognition part in Linear so that it can be hacked seamlessly.
 + Extend Nyquist(xlisp) in a clever way so it meets general computing needs.
   + E.g. Seamless interface to a running Common Lisp
