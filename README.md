@@ -24,7 +24,7 @@ Text explanation is coming soon.
 License
 -------
 
-CC-By-SA
+GPL
 
 Roadmap
 -------
