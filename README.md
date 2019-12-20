@@ -15,7 +15,9 @@ It will be accessible from Analyse->Linear ...
 Usage
 -----
 
-TODO
+![Linear Audacity Plugin Usage](../master/assets/linear-usage.png)
+
+Text explanation is coming soon.
 
 License
 -------
