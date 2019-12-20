@@ -1,5 +1,5 @@
 ;nyquist plug-in
-;version 0.1
+;version 4
 ;type analyze
 ;categories "http://lv2plug.in/ns/lv2core#AnalyserPlugin"
 ;name "Linear a linear programming language"
@@ -12,15 +12,19 @@
 ;; http://wiki.audacityteam.org/wiki/Nyquist_Plug-ins_Reference
 
 ;control noise-gate "noise-gate" float "" 0.2 0.0 1.0
-;control mode "mode" choice "[dev]preprocess, [dev]frequency graph, [dev]reconstruct, recognition, save words" 0
+;control mode "mode" choice "[dev]preprocess, [dev]frequency graph, [dev]reconstruct, recognition, save words, forth" 0
 ;control avg "average" int "" 100 1 1000
 ;control words "words" string "" ""
 
 ;;ref:http://audacity.238276.n2.nabble.com/Processing-individual-samples-td238764.html
 
-(load "forth.ny")
+
+
+(load (strcat *plugins-dir* "forth.ny"))
 
 (setq *project-srate* 16000)
+
+
 
 ;; define a dsp class
 ;;
@@ -62,20 +66,14 @@
     delayed-arr))
 
 
-;; define a dsp class
-;;
 (setf freq-class (send class :new '(copy-of-sound srate arr count)))
 
-;; initial function of dsp class
-;;
 (send freq-class :answer :isnew '(sound rate dura)
       '((setf copy-of-sound (snd-copy sound))
 	(setf srate rate)
 	(setf count -1)
 	(setf arr (frequency-stream sound rate dura))))
 
-;; method to be executed with every call to dsp-class
-;;
 (send freq-class :answer :next '()
       '((let ((current-sample (snd-fetch copy-of-sound)))
 	  (when current-sample
@@ -199,13 +197,13 @@
       (push str strs))
     (reverse strs)))
 
-(describe *word-names* "(string)")
+(describe '*word-names* "(string)")
 (setq *word-names* ())
 
 
 (describe 'save-words "((sound . symbol)) -> IO ()")
 (defun save-words (words)
-  (setq *words* (append *words* words))
+  (setq *words* (union *words* words))
   (format t "WORDS: ~A" *words*)
   (setq *workspace* nil)
   (add-to-workspace '*word-names*)
@@ -218,7 +216,7 @@
   (save-workspace))
 
 
-(describr 'init-words "-> IO ()")
+(describe 'init-words "-> IO ()")
 (defun init-words ()
   (load "workspace")
   (dolist (wn *word-names*)
@@ -228,7 +226,7 @@
 
 
 (describe 'extract-and-save-words "sound * string -> IO sound")
-(defun extract-words (sound word-names)
+(defun extract-and-save-words (sound word-names)
   (let* ((freq  (freq (sq sound)))
 	 (ws    (split-words freq)))
     (save-words (mapcar #'cons
@@ -240,7 +238,7 @@
 (defun recognition (word-sound)
   (sort
    (mapcar (lambda (w)
-	     (cons (match w word-sound) (word-name w)))
+	     (cons (match (word-snd w) word-sound) (word-name w)))
 	   *words*)
    (lambda (x y) (< (car x) (car y)))))
 
@@ -258,12 +256,20 @@
 	  ((= mode 2)
 	   (reconstruct (freq (sq sound))))
 	  ((= mode 3)
-	   (let ((ws  (split-words (freq (sq sound))))
-		 (rec (mapcar #'word-name (mapcar #'recognition xs))))
-	     (go-forth-q linear-lang rec)
-	     nil))
+	   (print *word-names*)
+	   (let* ((ws  (split-words (freq (sq sound))))
+		  (rec (mapcar #'car (mapcar #'recognition ws))))
+	     (mapcar (lambda (tn w)
+		       (list (car tn) (cdr tn) (format nil "~a" (cdr w))))
+		     (find-stops sound)
+		     rec)))
 	  ((= mode 4)
-	   (extract-and-save-words sound words)))))
+	   (extract-and-save-words sound words))
+	  ((= mode 5)
+	   (let* ((ws  (split-words (freq (sq sound))))
+		  (rec (mapcar #'cdr (mapcar #'car (mapcar #'recognition ws)))))
+	     (format t "~s" rec)
+	     (go-forth-q linear-lang rec))))))
 
 
 (multichan-expand #'process *TRACK*)

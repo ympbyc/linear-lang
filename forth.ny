@@ -61,6 +61,15 @@
 
 (def-forth-prim nop nil)
 
+(def-forth-prim-binary * *)
+(def-forth-prim-binary + +)
+(def-forth-prim-binary - -)
+(def-forth-prim-binary / /)
+(def-forth-prim-binary rem rem)
+(def-forth-prim-binary < <)
+(def-forth-prim-binary > >)
+(def-forth-prim-binary <= <=)
+(def-forth-prim-binary >= >=)
 (def-forth-prim-binary mul *)
 (def-forth-prim-binary add +)
 (def-forth-prim-binary sub -)
@@ -74,6 +83,9 @@
 (def-forth-prim drop nil
   (pop pstack))
 
+(def-forth-prim dot nil
+  (print (pop pstack)))
+
 (def-forth-prim dup nil
   (push (car pstack) pstack))
 
@@ -84,7 +96,7 @@
     (push s1 pstack)))
 
 (def-forth-prim print nil
-  (print (pop pstack)))
+  (print (car pstack)))
 
 (def-forth-prim to-r nil
   (push (pop pstack) rstack))
@@ -96,7 +108,7 @@
   `(dolist (w ',words)
      (funcall ,forth w)))
 
-(defun go-forth-q (forth &rest words)
+(defun go-forth-q (forth words)
   (dolist (w words)
     (funcall forth w)))
 
@@ -225,3 +237,5 @@
       (if compiling
 	  (forth-compile-in v)
 	  (push v pstack)))))
+
+(print "forth loaded.")
