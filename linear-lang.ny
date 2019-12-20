@@ -18,13 +18,13 @@
 
 ;;ref:http://audacity.238276.n2.nabble.com/Processing-individual-samples-td238764.html
 
-
+(setq *plugins-dir* "")
 
 (load (strcat *plugins-dir* "forth.ny"))
 
 (setq *project-srate* 16000)
 
-
+;;(setdir "")
 
 ;; define a dsp class
 ;;
