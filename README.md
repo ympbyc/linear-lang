@@ -8,7 +8,9 @@ Current version is implemented as an Audacity plugin.
 Install
 -------
 
-See Audacity help page for installing it as a plugin.
+Copy *.ny into Audacity's plug-ins directory.
+Enable Linear-lang through tools->Add/Remove Plug-ins
+It will be accessible from Analyse->Linear ...
 
 Usage
 -----
