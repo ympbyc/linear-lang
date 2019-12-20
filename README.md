@@ -8,9 +8,11 @@ Current version is implemented as an Audacity plugin.
 Install
 -------
 
-Copy *.ny into Audacity's plug-ins directory.
-Enable Linear-lang through tools->Add/Remove Plug-ins
-It will be accessible from Analyse->Linear ...
+1. Copy *.ny into Audacity's plug-ins directory.  
+2. Enable Linear-lang through tools->Add/Remove Plug-ins
+3. It will be accessible from Analyse->Linear ...
+4. Set project sample rate to 16000Hz
+5. You may need to tweak a few more settings before it starts running smoothly
 
 Usage
 -----
