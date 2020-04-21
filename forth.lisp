@@ -85,6 +85,14 @@
     (push s0 pstack)
     (push s1 pstack)))
 
+(def-forth-prim rot nil
+  (let ((s0 (pop pstack))
+	(s1 (pop pstack))
+	(s2 (pop pstack)))
+    (push s0 pstack)
+    (push s2 pstack)
+    (push s1 pstack)))
+
 (def-forth-prim print nil
   (print (car pstack)))
 
@@ -95,12 +103,22 @@
   (push (pop rstack) pstack))
 
 (defmacro go-forth (forth &rest words)
-  `(dolist (w ',words)
-     (funcall ,forth w)))
+  `(go-forth-q ,forth '(,@words)))
+
+(defmacro let1 (var val &body body)
+  `(let ((,var ,val))
+     ,@body))
 
 (defun go-forth-q (forth words)
-  (dolist (w words)
-    (funcall forth w)))
+  (let1 result
+	(dolist (w words)
+	  (funcall forth w))
+    (format t "~%PSTACK:    ~s~%RSTACK:    ~s~%PC:        ~s~%COMPILING: ~s"
+	    (funcall forth :pandric-get 'pstack)
+	    (funcall forth :pandric-get 'rstack)
+	    (funcall forth :pandric-get 'pc)
+	    (funcall forth :pandric-get 'compiling))
+    result))
 
 (defparameter forth-stdlib nil)
 
@@ -204,6 +222,28 @@
 	 (setf pc (list (forth-word-thread word)))
 	 (forth-inner-interpreter))))
 
+;;(sym/n 'map/2) => '(map 2)
+(defun sym/arity (sym)
+  (let1 xs
+      (uiop:split-string (symbol-name sym)
+			 :separator "/")
+    (values (sym (car xs))
+	    (if (cadr xs)
+		(parse-integer (cadr xs))
+		1))))
+
+(defmacro handle-unknown-symbol ()
+  `(multiple-value-bind (fname arity)
+       (sym/arity v)
+     (if (fboundp fname)
+	 (let1 res
+	     (apply
+	      (symbol-function fname)
+	      (loop for i from 1 to arity
+		 collect (pop pstack)))
+	   (push res pstack))
+	 (error "Word not found ~s" v))))
+
 (defmacro forth-handle-not-found ()
   `(cond
      ((and (consp v) (eq (car v) 'quote))
@@ -216,10 +256,17 @@
 	  (error "Postpone failed ~s" (cadr v)))
 	(forth-compile-in (forth-word-thread word))))
      ((symbolp v)
-      (error "Word not found ~s" v))
+      (handle-unknown-symbol))
      (t
       (if compiling
 	  (forth-compile-in v)
 	  (push v pstack)))))
 
-(print "forth loaded.")
+(defun pstack (forth)
+  (funcall forth :pandric-get 'pstack))
+
+(print "lol-forth loaded.")
+
+(defparameter lolf (new-forth))
+(defmacro lolf (&rest words)
+  `(go-forth lolf ,@words))
